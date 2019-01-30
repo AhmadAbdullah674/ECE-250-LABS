@@ -16,7 +16,8 @@
  *
  * The following is a list of uWaterloo User IDs of those students
  * I had discussions with in preparing this project:
- *    -JSSAHI 
+ *    -JSSAHI
+ *    -JGATHIES 
  *
  * The following is a list of uWaterloo User IDs of those students
  * who helped me with this project (describe their help; e.g., debugging):
@@ -156,11 +157,11 @@ void Dynamic_range_stack::push( int const &obj ) {
 	if( (entry_count+1) > current_capacity ){
 		current_capacity = 2 * current_capacity;
 
-		int *p_stack_array = new int [entry_count];
-		int *p_minimum_array = new int[entry_count];
-		int *p_maximum_array = new int[entry_count];
+		int *p_stack_array = new int [/*entry_count*/current_capacity];
+		int *p_minimum_array = new int[/*entry_count*/current_capacity];
+		int *p_maximum_array = new int[/*entry_count*/current_capacity];
 
-		for( int i=0; i<entry_count; i++ ){
+		for( int i=0; i<current_capacity; i++ ){
 
 			p_stack_array[i] = stack_array[i]; 
 			p_minimum_array[i] = minimum_array[i];
@@ -169,19 +170,9 @@ void Dynamic_range_stack::push( int const &obj ) {
 		
 		clean_arrays();
 
-                stack_array = new int [current_capacity];
-                minimum_array = new int[current_capacity];
-                maximum_array = new int[current_capacity];
-
-		for(int i=0; i< entry_count; i++){
-                	stack_array[i] = p_stack_array[i];
-                	minimum_array[i] = p_minimum_array[i];
-                	maximum_array[i] = p_maximum_array[i];
-		}
-
-		delete[] p_stack_array;
-		delete[] p_minimum_array;
-		delete[] p_maximum_array;
+                stack_array = p_stack_array;
+               	minimum_array = p_minimum_array;
+               	maximum_array = p_maximum_array;
 	}
 	
 
