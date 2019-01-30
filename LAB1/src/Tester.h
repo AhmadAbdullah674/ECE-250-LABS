@@ -44,8 +44,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "ece250.h"
 
+#include "ece250.h"
 
 template <class Class_name>
 class Tester {
@@ -54,16 +54,14 @@ class Tester {
 		std::string command;
 
 	public:
-		Tester( Class_name *obj = nullptr );
+		Tester( Class_name *obj = 0 ):
+		object( obj ) {
+			// emtpy constructor
+		}
+
 		int run();
 		virtual void process() = 0;
 };
-
-template <class Class_name>
-Tester<Class_name>::Tester( Class_name *obj ):
-object( obj ) {
-	// emtpy constructor
-}
 
 /****************************************************
  * int run()
@@ -80,6 +78,8 @@ int Tester<Class_name>::run() {
 	ece250::allocation_table.stop_recording();
 
 	const static std::string prompt = " % ";
+
+	int ptr = 3;
 
 	while ( true ) {
 		// terminate if there is an end-of-file or the user types 'exit'
@@ -126,7 +126,7 @@ int Tester<Class_name>::run() {
 			std::istringstream number( command.substr( 1, command.length() - 1 ) );
 			number >> n;
 
-			if ( n <= 0 || n >= ece250::count || n >= 1000 ) {
+			if ( n <= 0 || n > 100 ) {
 				std::cout << "Event not found" << std::endl;
 				continue;
 			}
@@ -134,8 +134,8 @@ int Tester<Class_name>::run() {
 			command = ece250::history[n];
 		}
 
-		// only track the first 1001 commands
-		if ( ece250::count < 1000 ) {
+		// only track the last 100 commands
+		if ( ece250::count <= 100 ) {
 			ece250::history[ece250::count] = command;
 		}
 
@@ -148,9 +148,17 @@ int Tester<Class_name>::run() {
 			std::cout << "Okay" << std::endl;
 			ece250::allocation_table.stop_recording();
 			break;
+		} else if ( command == "new" ) {
+			object = new Class_name();
+			std::cout << "Okay" << std::endl;
+		} else if ( command == "new:" ) {
+			int n;
+			std::cin >> n;
+			object = new Class_name( n );
+			std::cout << "Okay" << std::endl;
 		} else if ( command == "delete" ) {
 			delete object;
-			object = nullptr;
+			object = 0;
 			std::cout << "Okay" << std::endl;
 		} else if ( command == "summary" ) {
 			ece250::allocation_table.summary();
@@ -164,10 +172,7 @@ int Tester<Class_name>::run() {
 			if ( n == ece250::allocation_table.memory_alloc() ) {
 				std::cout << "Okay" << std::endl;
 			} else {
-				std::cout << "Failure in memory allocation: expecting "
-				          << n << " bytes to be allocated, but "
-				          << ece250::allocation_table.memory_alloc()
-				          << " bytes were allocated" << std::endl;
+				std::cout << "Failure in memory allocation: expecting " << n << " bytes to be allocated, but " << ece250::allocation_table.memory_alloc() << " bytes were allocated" << std::endl;
 			}
 		} else if ( command == "memory_store" ) {
 			ece250::allocation_table.memory_store();
@@ -188,5 +193,4 @@ int Tester<Class_name>::run() {
 
 	return 0;
 }
-
 #endif
