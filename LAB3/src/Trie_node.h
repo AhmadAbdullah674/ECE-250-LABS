@@ -76,110 +76,72 @@ Trie_node *Trie_node::child( int n ) const {
 
 bool Trie_node::member( std::string const &str, int depth ) const {
 	
-	bool btemp;
-	if (children == nullptr)
+	if(depth == str.length())
+		return is_terminal;
+        int index = tolower(str[depth]) - 'a';
+
+	if( child(index) == nullptr )
 		return false;
-	
-	int size = str.length();
-        char temp = tolower(str[depth]);
-        int index = int (tolower(temp)) - 'a';
+	else{
 
-	if( children[index] == nullptr )
-		return false;
-
-	if( depth == size )
-		return  is_terminal;
-
-	btemp = children[index]->member(str,depth+1);
-
-	return btemp;
+		return children[index]->member(str,++depth);
+	}
 
 }
 
 bool Trie_node::insert( std::string const &str, int depth ) {
 	
-
-	int size = str.length();
-	char temp = tolower(str[depth]);
-	int index = int (tolower(temp)) - 'a';
-
-	if ( children == nullptr){
-		children = new Trie_node *[CHARACTERS];
-		for(int i=0; i<CHARACTERS; i++)
-			children[index]=nullptr;
-
-		for(int i=0; i<CHARACTERS; i++){
-			if (i == index){
-				children[i] = new Trie_node;
-			}
+	if(depth == str.length()){
+		if(is_terminal)
+			return false;
+		else{
+			this->is_terminal = true;
+			return true;
 		}
-		is_terminal = false;
-	}
-
-	if(children[index] == nullptr){
-		children[index] = new Trie_node;
-		//children[index]->is_terminal = false;
-	}
-
-	if(depth < size){
-		children[index]->insert(str,depth+1);
-	}
-
-	if(depth == size)
-		is_terminal=true;
 	
-	return true; 
+	}
+	else{
+		int index = tolower(str[depth]) - 'a';
+		if ( children == nullptr){
+			children = new Trie_node *[CHARACTERS];
+			for(int i=0; i<CHARACTERS; i++)
+				children[i]=nullptr;
+		}	
+
+		if(child(index) == nullptr){
+			children[index] = new Trie_node;
+		}
+		return children[index]->insert(str,++depth);
+	}
 
 }
 
 bool Trie_node::erase( std::string const &str, int depth, Trie_node *&ptr_to_this ) {
-	int size = str.length();
-	char temp = tolower(str[depth]);
-	int index = int (tolower(temp)) - 'a';
-	bool b;
+	int index = tolower(str[depth]) - 'a';
 
-	if( depth < size ) {
-		b = children[index]->erase(str,depth+1,children[index]);
-
-		if(depth == size-1){
-			if (children == nullptr){
-				delete children;
-			}
-			else{
-				delete children[index];
-				return true;
-			}
-		}
-	}
-	//children[index]->erase(str,depth+1,children[index]);
-
-	if(is_terminal && depth < size)
+	if(ptr_to_this == nullptr)
 		return false;
-
-	//if (ptr_to_this == nullptr)
-	//	return false
-
-	if (depth == size){
-		is_terminal = false;
-
+	if(depth == str.length()){
+		this->is_terminal = false;
 		if(children == nullptr){
 			delete ptr_to_this;
 			ptr_to_this = nullptr;
-		}			
+		}
+		return true;
 	}
-
-	return b;
+	return children[index]->erase(str,++depth, children[index]);
 }
 
 void Trie_node::clear() {
-		for(int i;i<CHARACTERS;i++){
+	if(children != nullptr){
+		for(int i = 0; i < CHARACTERS; i++){
 			if (children[i] != nullptr){
-				if(is_terminal)
-					delete[] children;
-				clear();	
+				children[i]->clear();
+				delete children[i];	
 			}
-			delete children[i];
 		}
+	}
+	delete[] children;
 }
 
 

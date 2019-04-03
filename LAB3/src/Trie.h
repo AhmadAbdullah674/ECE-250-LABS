@@ -70,6 +70,11 @@ trie_size( 0 ) {
 }
 
 Trie::~Trie() {
+	if(root_node != nullptr){
+		root_node->clear();
+		delete root_node;
+		root_node = nullptr;
+	}
 }
 
 int Trie::size() const {
@@ -77,7 +82,7 @@ int Trie::size() const {
 }
 
 bool Trie::empty() const {
-	return trie_size;
+	return !(trie_size);
 }
 
 Trie_node *Trie::root() const {
@@ -85,17 +90,14 @@ Trie_node *Trie::root() const {
 }
 
 bool Trie::member( std::string const &str ) const {
-
-	if (root_node == nullptr)
-		return false;
-
 	for(int i=0; str[i] != '\0'; i++){
                 if(!isalpha(str[i]))
                         throw illegal_argument();
         }
-	bool b = root_node->member(str,0);
-	
-	return b;
+
+        if (root_node == nullptr || trie_size == 0)
+                return false;
+	return root_node->member(str,0);
 }
 
 bool Trie::insert( std::string const &str ) {
@@ -108,15 +110,16 @@ bool Trie::insert( std::string const &str ) {
 		root_node = new Trie_node;
 		
 	}
-
-	if ( root_node->member(str,0) )
+	if(member(str))
 		return false;
 
-
-	root_node->insert(str,0);
-	trie_size++;
-
-	return true;
+	if ( root_node->insert(str,0) ){
+		trie_size++;
+		return true;
+	}
+	else{
+		return false;
+	}
 }
 
 bool Trie::erase( std::string const &str ) {
@@ -125,30 +128,35 @@ bool Trie::erase( std::string const &str ) {
                 if(!isalpha(str[i]))
                         throw illegal_argument();
         }
-	
-	if (root_node == nullptr || trie_size == 0)
-		return false;
 
-	if(!(root_node->member(str,0)))
+	if(!(member(str)))
 		return false;
-
-	bool b = root_node->erase(str,0, root_node);
 	
-	if (b){	
+	if (root_node->erase(str,0, root_node)){	
 		trie_size--;
-		if (trie_size == 0)
+		if (trie_size == 0){
+			root_node->clear();
 			delete root_node;
+			root_node = nullptr;
+		}
 		return true;
 	}
 
-	return false;
+	else{
+		return false;
+	}	
 }
 
 void Trie::clear() {
-	for(int i;i<trie_size;i++)
- 		root_node->clear();
-	delete [] root_node;
-	trie_size=0;
+	if(trie_size > 0){
+		//trie_size=0;
+		if(root_node != nullptr){
+ 			root_node->clear();
+			delete root_node;
+			root_node = nullptr;
+		}
+		trie_size=0;
+	}
 }
 
 // You can modify this function however you want:  it will not be tested
